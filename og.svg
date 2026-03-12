@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0f0f0f"/>
+  <rect x="0" y="0" width="1200" height="4" fill="#c8a84e"/>
+  <text x="80" y="220" font-family="monospace" font-size="72" font-weight="bold" fill="#e0d8c8">uuidchop</text>
+  <text x="80" y="290" font-family="monospace" font-size="28" fill="#8f8577">UUID generator &amp; validator</text>
+  <text x="80" y="390" font-family="monospace" font-size="18" fill="#c8a84e">550e8400-e29b-41d4-a716-446655440000</text>
+  <text x="80" y="435" font-family="monospace" font-size="18" fill="#8f8577">v4 · cryptographically secure · bulk generate 1–100</text>
+  <text x="80" y="480" font-family="monospace" font-size="18" fill="#8f8577">Validate any UUID · Decode v1 timestamps · Nothing uploaded</text>
+  <text x="80" y="570" font-family="monospace" font-size="16" fill="#3a3a3a">bitter.sh</text>
+</svg>
