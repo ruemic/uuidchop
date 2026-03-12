@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://uuidchop.radicchio.page/sitemap.xml

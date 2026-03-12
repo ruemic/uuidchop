@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UUID Generator &amp; Validator — uuidchop</title>
+  <meta name="description" content="Free browser-side UUID generator and validator. Generate v4 UUIDs instantly, validate any UUID, decode v1 timestamps. Nothing uploaded — all computation in your browser.">
+  <meta property="og:title" content="UUID Generator & Validator — uuidchop">
+  <meta property="og:description" content="Generate v4 UUIDs, validate any UUID, decode v1 timestamps. Free, fast, browser-side. Nothing uploaded.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://uuidchop.radicchio.page">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="UUID Generator & Validator — uuidchop">
+  <meta name="twitter:description" content="Generate v4 UUIDs, validate any UUID, decode v1 timestamps. Free, browser-side.">
+  <link rel="canonical" href="https://uuidchop.radicchio.page">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "uuidchop",
+    "description": "Free browser-side UUID generator and validator. Generate v4 UUIDs instantly, validate any UUID, decode v1 timestamps.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "url": "https://uuidchop.radicchio.page",
+    "featureList": [
+      "Generate UUID v4 (single or bulk)",
+      "Validate any UUID string",
+      "Detect UUID version and variant",
+      "Decode v1 UUID timestamps",
+      "One-click copy",
+      "Export bulk UUIDs as text",
+      "100% browser-side — nothing uploaded"
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a UUID?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A UUID (Universally Unique Identifier) is a 128-bit label used to uniquely identify objects in computer systems. The standard format is xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx — 32 hexadecimal characters separated by hyphens."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between UUID v1 and v4?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "UUID v1 is generated from the current timestamp and the generating machine's MAC address. It is time-sortable but leaks hardware information. UUID v4 is generated from random bytes — no timestamp, no MAC address. Most modern applications use v4 for privacy and simplicity."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this UUID generator cryptographically secure?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. uuidchop uses the browser's Web Crypto API (crypto.randomUUID() and crypto.getRandomValues()) which generates cryptographically secure random bytes. This is the same source of randomness used by operating systems and security libraries."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are my UUIDs sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. All UUID generation and validation runs entirely in your browser using the Web Crypto API. Nothing is sent to any server. The page works offline after loading."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What UUID versions does uuidchop support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "uuidchop generates UUID v4 (random) and detects versions 1, 2, 3, 4, and 5 during validation. For v1 UUIDs it decodes the embedded timestamp and shows the creation time in UTC."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I validate a UUID?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Switch to the Validate tab, paste your UUID string, and uuidchop will instantly tell you if it is a valid UUID, which version it is, which variant it belongs to, and — if it is a v1 UUID — the timestamp encoded in it."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #1a1814;
+      --surface: #232019;
+      --border: #2e2b25;
+      --text: #e0d8c8;
+      --muted: #8f8577;
+      --accent: #c8a84e;
+      --accent-dim: #a08838;
+      --green: #6fbf8e;
+      --red: #c06060;
+      --font: 'Courier New', Courier, monospace;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .site-header {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+    .site-header .logo {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+    .site-header .tagline {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+
+    h1 {
+      font-size: 22px;
+      color: var(--text);
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 28px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 13px;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Generate panel */
+    .uuid-display {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .uuid-value {
+      font-size: 16px;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+      word-break: break-all;
+      margin-bottom: 14px;
+      line-height: 1.8;
+    }
+    .uuid-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: var(--border);
+      border: 1px solid #3e3a32;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 12px;
+      padding: 6px 14px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .btn:hover { background: #3a3628; }
+    .btn.primary {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: #1a1814;
+      font-weight: bold;
+    }
+    .btn.primary:hover { background: var(--accent); }
+    .btn.copied {
+      background: var(--green);
+      border-color: var(--green);
+      color: #1a1814;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .controls label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .controls select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .controls select:focus { outline: 1px solid var(--accent); }
+
+    .bulk-output {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .bulk-output.visible { display: block; }
+    .bulk-list {
+      font-size: 13px;
+      color: var(--accent);
+      line-height: 2;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 320px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+    }
+    .bulk-meta {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    /* Validate panel */
+    .input-area {
+      margin-bottom: 16px;
+    }
+    .input-area label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .uuid-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      padding: 12px 14px;
+      border-radius: 4px;
+      resize: vertical;
+    }
+    .uuid-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .uuid-input::placeholder { color: var(--muted); }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px;
+      display: none;
+    }
+    .result-card.visible { display: block; }
+    .result-card.valid { border-color: var(--green); }
+    .result-card.invalid { border-color: var(--red); }
+
+    .result-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot.valid { background: var(--green); }
+    .status-dot.invalid { background: var(--red); }
+    .status-text {
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .status-text.valid { color: var(--green); }
+    .status-text.invalid { color: var(--red); }
+
+    .result-fields {
+      display: grid;
+      gap: 8px;
+    }
+    .result-field {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .field-label { color: var(--muted); }
+    .field-value { color: var(--text); word-break: break-all; }
+    .field-value.accent { color: var(--accent); }
+
+    /* Info / explainer */
+    .section {
+      margin-top: 52px;
+    }
+    .section h2 {
+      font-size: 15px;
+      color: var(--text);
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+
+    .faq-list {
+      display: grid;
+      gap: 20px;
+    }
+    .faq-item h3 {
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .faq-item p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .uuid-anatomy {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .anatomy-uuid {
+      font-size: 15px;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+    .seg-time { color: #7eb8d4; }
+    .seg-version { color: var(--accent); }
+    .seg-variant { color: #b47ed4; }
+    .seg-random { color: var(--green); }
+    .anatomy-legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .privacy-note {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .privacy-note::before {
+      content: "🔒";
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 20px 24px;
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: gap;
+      gap: 8px;
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <span class="logo">uuidchop</span>
+  <span class="tagline">UUID generator &amp; validator</span>
+</header>
+
+<main>
+  <h1>UUID Generator &amp; Validator</h1>
+  <p class="subtitle">Generate cryptographically secure UUIDs, validate any UUID string, and decode v1 timestamps — all in your browser.</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="generate">Generate</button>
+    <button class="tab-btn" data-tab="validate">Validate</button>
+  </div>
+
+  <!-- GENERATE TAB -->
+  <div class="tab-panel active" id="tab-generate">
+    <div class="uuid-display">
+      <div class="uuid-value" id="single-uuid">—</div>
+      <div class="uuid-actions">
+        <button class="btn primary" id="btn-copy-single">Copy</button>
+        <button class="btn" id="btn-new-single">New UUID</button>
+      </div>
+    </div>
+
+    <div class="controls">
+      <label for="bulk-count">Generate multiple:</label>
+      <select id="bulk-count">
+        <option value="1">1</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+      <button class="btn" id="btn-generate-bulk">Generate</button>
+    </div>
+
+    <div class="bulk-output" id="bulk-output">
+      <div class="bulk-meta" id="bulk-meta"></div>
+      <div class="bulk-list" id="bulk-list"></div>
+      <div class="uuid-actions">
+        <button class="btn primary" id="btn-copy-bulk">Copy All</button>
+        <button class="btn" id="btn-download-bulk">Download .txt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VALIDATE TAB -->
+  <div class="tab-panel" id="tab-validate">
+    <div class="input-area">
+      <label for="uuid-input">Paste a UUID to validate</label>
+      <input
+        type="text"
+        class="uuid-input"
+        id="uuid-input"
+        placeholder="e.g. 550e8400-e29b-41d4-a716-446655440000"
+        spellcheck="false"
+        autocomplete="off"
+      >
+    </div>
+
+    <div class="result-card" id="result-card">
+      <div class="result-status">
+        <div class="status-dot" id="result-dot"></div>
+        <span class="status-text" id="result-status-text"></span>
+      </div>
+      <div class="result-fields" id="result-fields"></div>
+    </div>
+  </div>
+
+  <!-- EXPLAINER -->
+  <div class="section">
+    <h2>About UUIDs</h2>
+    <p>
+      A UUID (Universally Unique Identifier) is a 128-bit value used to uniquely identify
+      objects in computer systems — database rows, API resources, session tokens, file IDs.
+      The standard text representation is 32 hexadecimal characters grouped by hyphens:
+      <code style="color:var(--accent)">xxxxxxxx-xxxx-Mxxx-Nxxx-xxxxxxxxxxxx</code>
+    </p>
+    <p>
+      The letter <strong>M</strong> encodes the version (1–5) and the two high bits of the
+      <strong>N</strong> byte encode the variant. Together they tell you how the UUID was
+      generated and what rules it follows.
+    </p>
+
+    <div class="uuid-anatomy">
+      <div class="anatomy-uuid">
+        <span class="seg-time">550e8400-e29b-</span><span class="seg-version">4</span><span class="seg-time">1d4-</span><span class="seg-variant">a7</span><span class="seg-random">16-446655440000</span>
+      </div>
+      <div class="anatomy-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#7eb8d4"></div> time-based fields (v1) / random (v4)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> version</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#b47ed4"></div> variant bits</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> random / unique bits</div>
+      </div>
+    </div>
+
+    <p>
+      <strong style="color:var(--text)">UUID v4</strong> is the most widely used version. All 122 non-fixed bits
+      are randomly generated using a cryptographically secure PRNG. The probability of two
+      v4 UUIDs colliding is vanishingly small — roughly 1 in 5.3 × 10³⁶.
+    </p>
+    <p>
+      <strong style="color:var(--text)">UUID v1</strong> encodes a timestamp (100-nanosecond intervals since
+      15 October 1582) and the generating machine's MAC address. It is globally unique and
+      time-sortable, but leaks hardware information — which is why v4 replaced it for most
+      applications.
+    </p>
+    <p>
+      <strong style="color:var(--text)">UUID v3 and v5</strong> are namespace-based: they hash a namespace UUID
+      and a name to produce a deterministic UUID. Same inputs always produce the same UUID.
+      v3 uses MD5; v5 uses SHA-1. v5 is preferred.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <h3>Is this UUID generator cryptographically secure?</h3>
+        <p>Yes. uuidchop uses <code style="color:var(--accent)">crypto.randomUUID()</code> from the browser's Web Crypto API, which generates cryptographically secure random bytes — the same source used by operating systems and security libraries.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Are my UUIDs sent to a server?</h3>
+        <p>No. All generation and validation runs entirely in your browser. Nothing is transmitted. The page functions offline after its initial load.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What's the difference between UUID v1 and v4?</h3>
+        <p>v1 encodes a timestamp and MAC address — time-sortable but leaks hardware info. v4 is purely random — no timestamp, no MAC, no privacy concern. Use v4 unless you specifically need v1's sortability.</p>
+      </div>
+      <div class="faq-item">
+        <h3>How many UUIDs can I generate at once?</h3>
+        <p>Up to 100 at a time in the browser. Need thousands? The <code style="color:var(--accent)">crypto.randomUUID()</code> API is available in all modern environments — use it directly in Node.js, Deno, or browser scripts.</p>
+      </div>
+      <div class="faq-item">
+        <h3>What UUID formats does the validator accept?</h3>
+        <p>Standard hyphenated format (<code style="color:var(--accent)">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code>), compact 32-char hex without hyphens, and uppercase variants. The validator normalises the input before checking.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Can I use uuidchop from an AI agent or script?</h3>
+        <p>Yes — see <a href="https://github.com/ruemic/uuidchop/blob/main/AGENTS.md">AGENTS.md</a> for the machine-readable capability description and planned API endpoint.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="privacy-note">
+    All UUID generation and validation runs locally in your browser using the Web Crypto API.
+    No data is transmitted. Works offline after first load.
+  </div>
+</main>
+
+<footer>
+  <span>© 2026 uuidchop · <a href="https://bitterdesk.com" target="_blank" rel="noopener">Support</a> · <a href="https://github.com/ruemic/uuidchop" target="_blank" rel="noopener">GitHub</a></span>
+  <span><a href="https://hashchop.radicchio.page">hashchop</a> · <a href="https://jwtchop.radicchio.page">jwtchop</a> · <a href="https://b64chop.radicchio.page">b64chop</a> · <a href="https://csvchop.radicchio.page">csvchop</a></span>
+</footer>
+
+<script>
+  // ── Tab switching ──────────────────────────────────────────────────────────
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ── UUID utilities ─────────────────────────────────────────────────────────
+  function generateV4() {
+    return crypto.randomUUID();
+  }
+
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  function normaliseUUID(raw) {
+    const s = raw.trim().toLowerCase();
+    // compact 32-char hex → add hyphens
+    if (/^[0-9a-f]{32}$/.test(s)) {
+      return s.slice(0,8)+'-'+s.slice(8,12)+'-'+s.slice(12,16)+'-'+s.slice(16,20)+'-'+s.slice(20);
+    }
+    return s;
+  }
+
+  function parseUUID(uuid) {
+    const norm = normaliseUUID(uuid);
+    if (!UUID_RE.test(norm)) return { valid: false };
+
+    const hex = norm.replace(/-/g, '');
+    const version = parseInt(hex[12], 16);
+    const variantBits = parseInt(hex[16], 16);
+
+    let variant = 'Unknown';
+    if ((variantBits & 0x8) === 0) variant = 'NCS backward compatibility (0xx)';
+    else if ((variantBits & 0xC) === 0x8) variant = 'RFC 4122 / ITU-T X.667 (10x)';
+    else if ((variantBits & 0xE) === 0xC) variant = 'Microsoft backward compatibility (110)';
+    else if ((variantBits & 0xF) === 0xE || (variantBits & 0xF) === 0xF) variant = 'Reserved (111)';
+
+    const result = { valid: true, normalised: norm, version, variant };
+
+    // v1 timestamp decode
+    if (version === 1) {
+      // time_low (32 bits) + time_mid (16 bits) + time_high_and_version (12 bits, strip version nibble)
+      const timeLow  = BigInt('0x' + hex.slice(0, 8));
+      const timeMid  = BigInt('0x' + hex.slice(8, 12));
+      const timeHigh = BigInt('0x' + hex.slice(13, 16)); // skip version nibble
+      // 60-bit timestamp in 100ns intervals since Oct 15, 1582
+      const timestamp100ns = (timeHigh << 48n) | (timeMid << 32n) | timeLow;
+      // Convert to Unix ms: subtract Gregorian epoch offset (122192928000000000 × 100ns)
+      const GREGORIAN_TO_UNIX_100NS = 122192928000000000n;
+      const unixMs = Number((timestamp100ns - GREGORIAN_TO_UNIX_100NS) / 10000n);
+      result.timestamp = new Date(unixMs).toISOString() + ' UTC';
+      result.timestampMs = unixMs;
+      result.macBytes = hex.slice(20);
+    }
+
+    return result;
+  }
+
+  // ── Generate tab ───────────────────────────────────────────────────────────
+  const singleEl = document.getElementById('single-uuid');
+  let currentSingle = '';
+
+  function refreshSingle() {
+    currentSingle = generateV4();
+    singleEl.textContent = currentSingle;
+  }
+
+  refreshSingle();
+
+  const btnCopySingle = document.getElementById('btn-copy-single');
+  btnCopySingle.addEventListener('click', () => {
+    navigator.clipboard.writeText(currentSingle).then(() => {
+      btnCopySingle.textContent = 'Copied!';
+      btnCopySingle.classList.add('copied');
+      setTimeout(() => {
+        btnCopySingle.textContent = 'Copy';
+        btnCopySingle.classList.remove('copied');
+      }, 1500);
+    });
+  });
+
+  document.getElementById('btn-new-single').addEventListener('click', refreshSingle);
+
+  // Bulk generation
+  let bulkUUIDs = [];
+
+  document.getElementById('btn-generate-bulk').addEventListener('click', () => {
+    const count = parseInt(document.getElementById('bulk-count').value, 10);
+    bulkUUIDs = Array.from({ length: count }, generateV4);
+
+    const bulkOutput = document.getElementById('bulk-output');
+    document.getElementById('bulk-meta').textContent = `${count} UUID${count > 1 ? 's' : ''} — v4, cryptographically secure`;
+    document.getElementById('bulk-list').textContent = bulkUUIDs.join('\n');
+    bulkOutput.classList.add('visible');
+  });
+
+  document.getElementById('btn-copy-bulk').addEventListener('click', () => {
+    if (!bulkUUIDs.length) return;
+    navigator.clipboard.writeText(bulkUUIDs.join('\n')).then(() => {
+      const btn = document.getElementById('btn-copy-bulk');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy All';
+        btn.classList.remove('copied');
+      }, 1500);
+    });
+  });
+
+  document.getElementById('btn-download-bulk').addEventListener('click', () => {
+    if (!bulkUUIDs.length) return;
+    const blob = new Blob([bulkUUIDs.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `uuids-${bulkUUIDs.length}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // ── Validate tab ───────────────────────────────────────────────────────────
+  const uuidInput = document.getElementById('uuid-input');
+  const resultCard = document.getElementById('result-card');
+  const resultDot = document.getElementById('result-dot');
+  const resultStatusText = document.getElementById('result-status-text');
+  const resultFields = document.getElementById('result-fields');
+
+  function renderResult(raw) {
+    if (!raw.trim()) {
+      resultCard.classList.remove('visible', 'valid', 'invalid');
+      return;
+    }
+
+    const r = parseUUID(raw);
+    resultCard.classList.add('visible');
+
+    if (!r.valid) {
+      resultCard.classList.remove('valid');
+      resultCard.classList.add('invalid');
+      resultDot.className = 'status-dot invalid';
+      resultStatusText.className = 'status-text invalid';
+      resultStatusText.textContent = 'Invalid UUID';
+      resultFields.innerHTML = '<div class="result-field"><span class="field-label">Reason</span><span class="field-value">Does not match UUID format (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)</span></div>';
+      return;
+    }
+
+    resultCard.classList.remove('invalid');
+    resultCard.classList.add('valid');
+    resultDot.className = 'status-dot valid';
+    resultStatusText.className = 'status-text valid';
+    resultStatusText.textContent = 'Valid UUID';
+
+    const versionLabels = { 1: 'v1 — Timestamp + MAC', 2: 'v2 — DCE Security', 3: 'v3 — MD5 name-based', 4: 'v4 — Random', 5: 'v5 — SHA-1 name-based' };
+    const vLabel = versionLabels[r.version] || `v${r.version} — Unknown`;
+
+    let html = `
+      <div class="result-field">
+        <span class="field-label">Normalised</span>
+        <span class="field-value accent">${r.normalised}</span>
+      </div>
+      <div class="result-field">
+        <span class="field-label">Version</span>
+        <span class="field-value">${vLabel}</span>
+      </div>
+      <div class="result-field">
+        <span class="field-label">Variant</span>
+        <span class="field-value">${r.variant}</span>
+      </div>
+    `;
+
+    if (r.version === 1 && r.timestamp) {
+      html += `
+        <div class="result-field">
+          <span class="field-label">Timestamp</span>
+          <span class="field-value">${r.timestamp}</span>
+        </div>
+        <div class="result-field">
+          <span class="field-label">MAC bytes</span>
+          <span class="field-value">${r.macBytes.match(/.{2}/g).join(':')}</span>
+        </div>
+      `;
+    }
+
+    resultFields.innerHTML = html;
+  }
+
+  uuidInput.addEventListener('input', () => renderResult(uuidInput.value));
+  uuidInput.addEventListener('paste', () => {
+    setTimeout(() => renderResult(uuidInput.value), 0);
+  });
+</script>
+
+</body>
+</html>
