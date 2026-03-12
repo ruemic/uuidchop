@@ -78,3 +78,7 @@ All computation runs in the browser. No UUIDs are transmitted. No analytics on i
 - [jwtchop](https://jwtchop.radicchio.page) — JWT token decoder
 - [b64chop](https://b64chop.radicchio.page) — Base64 encoder/decoder
 - [csvchop](https://csvchop.radicchio.page) — CSV inspector and JSON converter
+
+## Support
+
+https://bitterdesk.com/s/uuidchop/
