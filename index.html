@@ -47,26 +47,10 @@
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "What is a UUID?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "A UUID (Universally Unique Identifier) is a 128-bit label used to uniquely identify objects in computer systems. The standard format is xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx — 32 hexadecimal characters separated by hyphens."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What is the difference between UUID v1 and v4?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "UUID v1 is generated from the current timestamp and the generating machine's MAC address. It is time-sortable but leaks hardware information. UUID v4 is generated from random bytes — no timestamp, no MAC address. Most modern applications use v4 for privacy and simplicity."
-        }
-      },
-      {
-        "@type": "Question",
         "name": "Is this UUID generator cryptographically secure?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes. uuidchop uses the browser's Web Crypto API (crypto.randomUUID() and crypto.getRandomValues()) which generates cryptographically secure random bytes. This is the same source of randomness used by operating systems and security libraries."
+          "text": "Yes. uuidchop uses crypto.randomUUID() from the browser's Web Crypto API, which generates cryptographically secure random bytes — the same source used by operating systems and security libraries."
         }
       },
       {
@@ -74,23 +58,39 @@
         "name": "Are my UUIDs sent to a server?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "No. All UUID generation and validation runs entirely in your browser using the Web Crypto API. Nothing is sent to any server. The page works offline after loading."
+          "text": "No. All generation and validation runs entirely in your browser. Nothing is transmitted. The page functions offline after its initial load."
         }
       },
       {
         "@type": "Question",
-        "name": "What UUID versions does uuidchop support?",
+        "name": "What's the difference between UUID v1 and v4?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "uuidchop generates UUID v4 (random) and detects versions 1, 2, 3, 4, and 5 during validation. For v1 UUIDs it decodes the embedded timestamp and shows the creation time in UTC."
+          "text": "v1 encodes a timestamp and MAC address — time-sortable but leaks hardware info. v4 is purely random — no timestamp, no MAC, no privacy concern. Use v4 unless you specifically need v1's sortability."
         }
       },
       {
         "@type": "Question",
-        "name": "How do I validate a UUID?",
+        "name": "How many UUIDs can I generate at once?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Switch to the Validate tab, paste your UUID string, and uuidchop will instantly tell you if it is a valid UUID, which version it is, which variant it belongs to, and — if it is a v1 UUID — the timestamp encoded in it."
+          "text": "Up to 100 at a time in the browser. Need thousands? The crypto.randomUUID() API is available in all modern environments — use it directly in Node.js, Deno, or browser scripts."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What UUID formats does the validator accept?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Standard hyphenated format (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx), compact 32-char hex without hyphens, and uppercase variants. The validator normalises the input before checking."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use uuidchop from an AI agent or script?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes — see AGENTS.md for the machine-readable capability description and planned API endpoint."
         }
       }
     ]
