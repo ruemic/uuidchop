@@ -451,16 +451,47 @@
       margin-top: 1px;
     }
 
+    .more-tools {
+      margin-top: 40px;
+      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    .more-tools h3 {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 14px;
+    }
+
+    .tool-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tool-link {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.82rem;
+      padding: 6px 12px;
+      transition: border-color 0.15s;
+    }
+
+    .tool-link:hover { border-color: var(--accent); }
+
     footer {
       border-top: 1px solid var(--border);
-      padding: 20px 24px;
+      padding: 16px 24px;
+      text-align: center;
       font-size: 11px;
       color: var(--muted);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: gap;
-      gap: 8px;
     }
     footer a { color: var(--muted); }
     footer a:hover { color: var(--accent); }
@@ -617,11 +648,33 @@
     All UUID generation and validation runs locally in your browser using the Web Crypto API.
     No data is transmitted. Works offline after first load.
   </div>
+
+  <!-- More tools -->
+  <div class="more-tools">
+    <h3>More tools — the -chop family</h3>
+    <div class="tool-links">
+      <a href="https://hashchop.radicchio.page" class="tool-link">hashchop — SHA hasher</a>
+      <a href="https://jwtchop.radicchio.page" class="tool-link">jwtchop — JWT decoder</a>
+      <a href="https://epochop.radicchio.page" class="tool-link">epochop — Unix timestamp</a>
+      <a href="https://b64chop.radicchio.page" class="tool-link">b64chop — Base64 encoder</a>
+      <a href="https://csvchop.radicchio.page" class="tool-link">csvchop — CSV to JSON</a>
+      <a href="https://qrnch.radicchio.page" class="tool-link">qrnch — QR generator</a>
+      <a href="https://envlint.com" class="tool-link">envlint — .env validator</a>
+      <a href="https://linkscrub.radicchio.page" class="tool-link">linkscrub — URL cleaner</a>
+      <a href="https://cronfig.radicchio.page" class="tool-link">cronfig — cron tester</a>
+      <a href="https://feedlint.radicchio.page" class="tool-link">feedlint — RSS validator</a>
+      <a href="https://difflint.radicchio.page" class="tool-link">difflint — diff linter</a>
+      <a href="https://yamlchop.radicchio.page" class="tool-link">yamlchop — YAML validator</a>
+      <a href="https://radish.radicchio.page" class="tool-link">radish — stack trace analyzer</a>
+      <a href="https://pxicons.com" class="tool-link">pxicons — pixel favicon editor</a>
+      <a href="https://sqlchop.radicchio.page" class="tool-link">sqlchop — SQL formatter</a>
+    </div>
+  </div>
 </main>
 
 <footer>
-  <span>© 2026 uuidchop · <a href="https://bitterdesk.com/s/uuidchop/" target="_blank" rel="noopener">Support</a> · <a href="https://github.com/ruemic/uuidchop" target="_blank" rel="noopener">GitHub</a></span>
-  <span><a href="https://hashchop.radicchio.page">hashchop</a> · <a href="https://jwtchop.radicchio.page">jwtchop</a> · <a href="https://epochop.radicchio.page">epochop</a> · <a href="https://b64chop.radicchio.page">b64chop</a> · <a href="https://csvchop.radicchio.page">csvchop</a> · <a href="https://qrnch.radicchio.page">qrnch</a> · <a href="https://envlint.com">envlint</a> · <a href="https://linkscrub.radicchio.page">linkscrub</a> · <a href="https://cronfig.radicchio.page">cronfig</a> · <a href="https://feedlint.radicchio.page">feedlint</a> · <a href="https://difflint.radicchio.page">difflint</a> · <a href="https://yamlchop.radicchio.page">yamlchop</a> · <a href="https://radish.radicchio.page">radish</a> · <a href="https://pxicons.com">pxicons</a> · <a href="https://sqlchop.radicchio.page">sqlchop</a></span>
+  <a href="https://bitterdesk.com/s/uuidchop/" target="_blank" rel="noopener">Support</a> &middot;
+  <span>uuidchop — built by an independent developer</span>
 </footer>
 
 <script>
